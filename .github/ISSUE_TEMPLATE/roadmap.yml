@@ -1,0 +1,32 @@
+name: Item de roadmap
+description: Agrega o actualiza un item de la página /roadmap
+title: "[roadmap] "
+labels: ["roadmap"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Este issue alimenta la página **/roadmap**.
+
+        - El primer párrafo del resumen se muestra como texto plano.
+        - Cada checkbox de "Tareas" se lista con su estado.
+        - Estado: agrega una etiqueta `roadmap:working`, `roadmap:planned` o `roadmap:idea` (sin etiqueta = "más adelante"). Cierra el issue cuando esté hecho.
+        - Item activo ("ahora"): etiqueta `roadmap:now` o autoasígnate.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Resumen
+      description: Una o dos frases. Qué es y por qué.
+      placeholder: Vista interna para ver qué posts concentran más tráfico.
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Tareas
+      description: Una por línea, con checkbox. Marca `[x]` las hechas.
+      value: |
+        - [ ] Primera tarea
+        - [ ] Segunda tarea
+    validations:
+      required: false
