@@ -1,0 +1,14 @@
+---
+import astroLogo from '../assets/astro.svg';
+import background from '../assets/background.svg';
+import { getTodaysReflection } from '../lib/api';
+
+const reflection = await getTodaysReflection();
+---
+
+
+ <div id="container">
+	<main>
+		<p class="reflection">{reflection.title}</p>
+	</main>
+</div>
