@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Features
+
+- Render daily reflection view with logo and favicon ([437a346](https://github.com/4DRIAN0RTIZ/ODAAT/commit/437a3464ec4466d70aea8a0bb1fb9009643b89b8))
+
 ## [0.1.0] - 2026-09-15
 
 ### Bug Fixes

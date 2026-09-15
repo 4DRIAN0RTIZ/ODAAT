@@ -1,4 +1,5 @@
 ---
+import favicon from "../assets/favicon.webp";
 import "../styles/global.css";
 ---
 <!doctype html>
@@ -6,10 +7,9 @@ import "../styles/global.css";
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" type="image/webp" href={favicon.src} />
 		<meta name="generator" content={Astro.generator} />
-		<title>ODAAT</title>
+		<title>ODAAT - Once Day At A Time</title>
 	</head>
 	<body>
 		<slot />
