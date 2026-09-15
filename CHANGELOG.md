@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.1.0] - 2026-09-15
 
 ### Bug Fixes
 
@@ -14,6 +14,7 @@ All notable changes to this project are documented here.
 
 ### Chore
 
+- Update CHANGELOG.md [skip ci] ([ae61629](https://github.com/4DRIAN0RTIZ/ODAAT/commit/ae616299233eb106551a565e8a9ff203555cd2df))
 - Update CHANGELOG.md [skip ci] ([91bd9e1](https://github.com/4DRIAN0RTIZ/ODAAT/commit/91bd9e15a17e1a5810d771a85971f182ae4bd045))
 - Update CHANGELOG.md [skip ci] ([e4f3a9f](https://github.com/4DRIAN0RTIZ/ODAAT/commit/e4f3a9fa2c902ea1d74b8f6f9961b9bdbbd1f855))
 
