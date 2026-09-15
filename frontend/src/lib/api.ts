@@ -1,4 +1,4 @@
-interface Reflection {
+export interface Reflection {
 	month: string;
 	day: string;
 	date_label: string;
