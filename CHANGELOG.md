@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [0.2.2] - 2026-09-17
+
+### Bug Fixes
+
+- Drop pipe-encoded milestone from issue title ([a1b296b](https://github.com/4DRIAN0RTIZ/ODAAT/commit/a1b296b9b2fbdcddd49b752641b6f9be143a29f5))
+
 ## [0.2.1] - 2026-09-17
 
 ### Bug Fixes
