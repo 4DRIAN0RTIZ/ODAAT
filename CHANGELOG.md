@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [0.2.1] - 2026-09-17
+
+### Bug Fixes
+
+- Complete issue template and prefix title with [roadmap] ([a3041a6](https://github.com/4DRIAN0RTIZ/ODAAT/commit/a3041a6c948481302926404dc2f345fee939dd85))
+
 ## [0.2.0] - 2026-09-15
 
 ### Chore
