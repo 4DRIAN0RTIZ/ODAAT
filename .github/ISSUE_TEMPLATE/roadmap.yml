@@ -1,6 +1,6 @@
 name: Item de roadmap
 description: Agrega o actualiza un item de la página /roadmap
-title: "[roadmap] <Nombre> | <Milestone>"
+title: "[roadmap] <Nombre>"
 labels: ["roadmap"]
 body:
   - type: markdown
@@ -12,7 +12,7 @@ body:
         - Cada checkbox de "Tareas" se lista con su estado.
         - Estado: agrega una etiqueta `roadmap:working`, `roadmap:planned` o `roadmap:idea` (sin etiqueta = "más adelante"). Cierra el issue cuando esté hecho.
         - Item activo ("ahora"): etiqueta `roadmap:now` o autoasígnate.
-        - Título: sigue el patrón `Nombre | Milestone`. El Milestone es una fase o epic real (ej. "Rendimiento del blog"), NO una versión.
+        - Milestone: usalo como campo nativo de GitHub (Milestones del repo), no lo metas en el título. Es una fase o epic real (ej. "Rendimiento del blog"), NO una versión.
         - Todo lo que escribas después de una línea `===` queda solo en el issue: nunca se manda a la página de roadmap.
   - type: textarea
     id: summary
