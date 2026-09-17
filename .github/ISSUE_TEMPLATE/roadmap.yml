@@ -1,6 +1,6 @@
 name: Item de roadmap
 description: Agrega o actualiza un item de la página /roadmap
-title: "[roadmap] "
+title: "[roadmap] <Nombre> | <Milestone>"
 labels: ["roadmap"]
 body:
   - type: markdown
@@ -12,6 +12,8 @@ body:
         - Cada checkbox de "Tareas" se lista con su estado.
         - Estado: agrega una etiqueta `roadmap:working`, `roadmap:planned` o `roadmap:idea` (sin etiqueta = "más adelante"). Cierra el issue cuando esté hecho.
         - Item activo ("ahora"): etiqueta `roadmap:now` o autoasígnate.
+        - Título: sigue el patrón `Nombre | Milestone`. El Milestone es una fase o epic real (ej. "Rendimiento del blog"), NO una versión.
+        - Todo lo que escribas después de una línea `===` queda solo en el issue: nunca se manda a la página de roadmap.
   - type: textarea
     id: summary
     attributes:
@@ -28,5 +30,14 @@ body:
       value: |
         - [ ] Primera tarea
         - [ ] Segunda tarea
+    validations:
+      required: false
+  - type: textarea
+    id: details
+    attributes:
+      label: Detalle interno (opcional)
+      description: Notas o contexto interno. No se muestra en /roadmap.
+      value: |
+        ===
     validations:
       required: false
