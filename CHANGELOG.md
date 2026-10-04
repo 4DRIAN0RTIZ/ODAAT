@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Bug Fixes
+
+- Disable random reflection until server is ready ([57873ee](https://github.com/4DRIAN0RTIZ/ODAAT/commit/57873ee825f3281a7ae12af867dfcc031c2077b8))
+
 ## [0.3.2] - 2026-10-04
 
 ### Bug Fixes
