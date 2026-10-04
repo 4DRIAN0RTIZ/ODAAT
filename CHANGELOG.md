@@ -4,8 +4,13 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Chore
+
+- Update CHANGELOG.md [skip ci] ([d5319f4](https://github.com/4DRIAN0RTIZ/ODAAT/commit/d5319f4f5165c36cc438322a62683112e48bdbed))
+
 ### Features
 
+- Handle unavailable API with CrystalAlert toasts ([228eaae](https://github.com/4DRIAN0RTIZ/ODAAT/commit/228eaae9b9a32e191c11cb9bff1bd201e7001cd1))
 - Add random reflection action ([5d2c539](https://github.com/4DRIAN0RTIZ/ODAAT/commit/5d2c539d817b348ef431ddbf8d6e8d31e20e6283))
 
 ## [0.2.2] - 2026-09-17
