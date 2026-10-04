@@ -2,11 +2,15 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.3.3] - 2026-10-04
 
 ### Bug Fixes
 
 - Disable random reflection until server is ready ([57873ee](https://github.com/4DRIAN0RTIZ/ODAAT/commit/57873ee825f3281a7ae12af867dfcc031c2077b8))
+
+### Chore
+
+- Update CHANGELOG.md [skip ci] ([3e30a67](https://github.com/4DRIAN0RTIZ/ODAAT/commit/3e30a67b9e6a53b060891074922fed3e7cd95ca6))
 
 ## [0.3.2] - 2026-10-04
 
