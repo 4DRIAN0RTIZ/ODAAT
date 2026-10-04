@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [0.3.1] - 2026-10-04
+
+### Bug Fixes
+
+- Connect API client to Render service ([b0eab29](https://github.com/4DRIAN0RTIZ/ODAAT/commit/b0eab29a4b627e16e4e0a89bd1a67515383fe6a0))
+
 ## [0.3.0] - 2026-10-04
 
 ### Chore
