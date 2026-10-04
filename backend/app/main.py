@@ -10,7 +10,12 @@ from fastapi import FastAPI, HTTPException
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "reflections.json"
 
 app = FastAPI(title="Reflexiones Diarias API", version="1.0.0")
-CORS_ORIGINS = ["http://odaat.localhost:1355", "http://localhost:4321", "https://odaat.cuevaneander.tech"]
+CORS_ORIGINS = [
+    "http://odaat.localhost:1355",
+    "http://localhost:4321",
+    "https://odaat.cuevaneander.tech",
+    "https://odaat.netlify.app",
+]
 app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 @lru_cache
