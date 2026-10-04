@@ -2,11 +2,15 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.3.2] - 2026-10-04
 
 ### Bug Fixes
 
 - Allow Netlify frontend origin ([65127ae](https://github.com/4DRIAN0RTIZ/ODAAT/commit/65127ae1154e5ab99b9fd801022f998849f73edd))
+
+### Chore
+
+- Update CHANGELOG.md [skip ci] ([aba1554](https://github.com/4DRIAN0RTIZ/ODAAT/commit/aba15543fdea680cf025db310076510de706f16d))
 
 ## [0.3.1] - 2026-10-04
 
