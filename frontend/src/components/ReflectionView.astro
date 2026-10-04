@@ -10,7 +10,9 @@ interface Props {
 
 <button
 	id="random-reflection-button"
-	class="group fixed top-4 right-4 inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/60 px-4 py-2 font-serif text-sm tracking-wide text-stone-600 shadow-sm backdrop-blur transition-all duration-300 hover:border-emerald-200 hover:bg-white/80 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+	class="group fixed top-4 right-4 inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/60 px-4 py-2 font-serif text-sm tracking-wide text-stone-600 shadow-sm backdrop-blur transition-all duration-300 hover:border-emerald-200 hover:bg-white/80 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+	disabled
+	aria-busy="true"
 	style="z-index: 9999;"
 >
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0 opacity-60 transition-all duration-500 group-hover:rotate-180 group-hover:opacity-100">
@@ -147,6 +149,10 @@ interface Props {
 	});
 
 	serverReadyPromise.then(() => {
+		if (randomButton instanceof HTMLButtonElement) {
+			randomButton.disabled = false;
+			randomButton.removeAttribute('aria-busy');
+		}
 		notifications.toast({
 			title: 'Servidor listo',
 			text: 'Ya puedes pedir otra reflexión.',
@@ -163,7 +169,7 @@ interface Props {
 	});
 
 	const boton = randomButton;
-	if (boton) {
+	if (boton instanceof HTMLButtonElement) {
 	boton.addEventListener('click', async () => {
 		boton.disabled = true; // Disable the button to prevent multiple clicks
 		try {
