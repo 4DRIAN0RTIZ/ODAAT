@@ -28,6 +28,11 @@ def _get(month: int, day: int) -> dict:
     return reflection
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @app.get("/reflections")
 def list_all():
     return list(_load().values())

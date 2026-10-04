@@ -30,3 +30,25 @@ export async function getRandomReflection(): Promise<Reflection> {
 	return data;
 }
 
+export async function serverReady(onWaiting?: () => void): Promise<void> {
+	const deadline = Date.now() + 90000;
+	let notifiedWaiting = false;
+
+	while (Date.now() < deadline) {
+		try {
+			const response = await fetch(`${API_BASE_URL}/health`, { signal: AbortSignal.timeout(5000) });
+			if (response.ok) return;
+		} catch (_) {
+
+		}
+
+		if (!notifiedWaiting) {
+			notifiedWaiting = true;
+			onWaiting?.();
+		}
+
+		await new Promise(resolve => setTimeout(resolve, 3000));
+	}
+
+	throw new Error('Server did not become ready within 90 seconds');
+}
