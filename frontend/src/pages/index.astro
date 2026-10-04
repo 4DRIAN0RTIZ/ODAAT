@@ -29,23 +29,54 @@ try {
 			import { serverReady } from '../lib/api';
 			import { notifications } from '../lib/notifications';
 
-			const MESSAGES = [
-				'El servidor está despertando…',
-				'Trayendo la reflexión de hoy…',
+			const MESSAGES_IDLE = [
+				'Comprobando la conexión…',
+				'Preparando la reflexión de hoy…',
+				'Consultando el servidor…',
+				'Buscando la reflexión de hoy…',
+				'Veamos qué nos trae el día…',
 				'Casi listo…',
-				'El servidor tardará unos segundos.',
-				'Aún esperando…',
-				'¡Gracias por tu paciencia!',
-				'Estamos preparando la reflexión de hoy…',
 			];
+			const MESSAGES_WAKEUP = [
+				'El servidor está despertando…',
+				'Esto puede tardar unos segundos…',
+				'Aún estamos esperando al servidor…',
+				'El servicio está volviendo a la vida…',
+				'Estamos preparando la conexión…',
+				'La primera respuesta puede tardar un poco…',
+				'El servidor sigue trabajando…',
+				'No te preocupes, seguimos intentando…',
+				'La conexión está casi lista…',
+				'Estamos recuperando el servicio…',
+				'Gracias por tu paciencia…',
+				'La reflexión estará disponible en breve…',
+				'El servidor está tomando impulso…',
+				'Continuamos esperando una respuesta…',
+				'La conexión sigue en marcha…',
+				'Estamos a punto de terminar…',
+				'El servicio necesita unos instantes más…',
+				'La reflexión está casi preparada…',
+				'Seguimos conectando con el servidor…',
+				'El servidor está finalizando su arranque…',
+				'Un momento más y estaremos listos…',
+				'La respuesta debería llegar pronto…',
+				'Estamos manteniendo la conexión activa…',
+				'Últimos segundos de espera…',
+				'¡Gracias por esperar con nosotros!',
+			];
+			const WAKEUP_AFTER_MS = 15000;
+			const waitStartedAt = Date.now();
 			const status = document.getElementById('server-status');
 			let messageIndex = 0;
 			let messageTimer: ReturnType<typeof setInterval> | undefined;
 
 			function showNextMessage() {
 				if (!status) return;
-				status.textContent = MESSAGES[messageIndex];
-				messageIndex = (messageIndex + 1) % MESSAGES.length;
+				const messages = Date.now() - waitStartedAt >= WAKEUP_AFTER_MS
+					? MESSAGES_WAKEUP
+					: MESSAGES_IDLE;
+				status.textContent = messages[messageIndex % messages.length];
+				messageIndex += 1;
 			}
 
 			notifications.toast({
