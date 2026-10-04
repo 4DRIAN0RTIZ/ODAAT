@@ -3,13 +3,15 @@ import random
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
+from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi import FastAPI, HTTPException
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "reflections.json"
 
 app = FastAPI(title="Reflexiones Diarias API", version="1.0.0")
-
+CORS_ORIGINS = ["http://odaat.localhost:1355", "http://localhost:4321", "https://odaat.cuevaneander.tech"]
+app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 @lru_cache
 def _load() -> dict[str, dict]:

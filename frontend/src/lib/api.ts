@@ -20,4 +20,13 @@ export async function getTodaysReflection(): Promise<Reflection> {
 	return data;
 }
 
+export async function getRandomReflection(): Promise<Reflection> {
+	const response = await fetch(`${API_BASE_URL}/reflections/random`);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch random reflection: ${response.statusText}`);
+	}
+
+	const data = await response.json();
+	return data;
+}
 
