@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Features
+
+- Add random reflection action ([5d2c539](https://github.com/4DRIAN0RTIZ/ODAAT/commit/5d2c539d817b348ef431ddbf8d6e8d31e20e6283))
+
 ## [0.2.2] - 2026-09-17
 
 ### Bug Fixes
