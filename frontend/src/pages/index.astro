@@ -4,9 +4,80 @@ import Layout from '../layouts/Layout.astro';
 
 import { getTodaysReflection } from '../lib/api';
 
-const reflection = await getTodaysReflection();
+let reflection: Awaited<ReturnType<typeof getTodaysReflection>> | undefined;
+let initialLoadFailed = false;
+
+try {
+	reflection = await getTodaysReflection();
+} catch {
+	initialLoadFailed = true;
+}
 ---
 
 <Layout>
-	<ReflectionView reflection={reflection} />
+	{initialLoadFailed ? (
+		<main class="flex min-h-screen items-center justify-center bg-[#f7f6f1] px-6 text-center text-stone-600">
+			<section aria-labelledby="server-status-title">
+				<h1 id="server-status-title" class="font-serif text-3xl text-stone-800">Conectando con el servidor…</h1>
+				<p id="server-status" class="mt-4" role="status" aria-live="polite">
+					Comprobando la conexión.
+				</p>
+			</section>
+		</main>
+
+		<script>
+			import { serverReady } from '../lib/api';
+			import { notifications } from '../lib/notifications';
+
+			const MESSAGES = [
+				'El servidor está despertando…',
+				'Trayendo la reflexión de hoy…',
+				'Casi listo…',
+				'El servidor tardará unos segundos.',
+				'Aún esperando…',
+				'¡Gracias por tu paciencia!',
+				'Estamos preparando la reflexión de hoy…',
+			];
+			const status = document.getElementById('server-status');
+			let messageIndex = 0;
+			let messageTimer: ReturnType<typeof setInterval> | undefined;
+
+			function showNextMessage() {
+				if (!status) return;
+				status.textContent = MESSAGES[messageIndex];
+				messageIndex = (messageIndex + 1) % MESSAGES.length;
+			}
+
+			notifications.toast({
+				title: 'Conectando',
+				text: 'El servidor está despertando…',
+				icon: 'warning',
+				duration: 5000,
+			});
+			showNextMessage();
+			messageTimer = setInterval(showNextMessage, 3000);
+
+			serverReady().then(() => {
+				if (messageTimer) clearInterval(messageTimer);
+				notifications.toast({
+					title: 'Servidor listo',
+					text: 'Cargando la reflexión de hoy…',
+					icon: 'success',
+					duration: 3000,
+				});
+				window.location.reload();
+			}).catch(() => {
+				if (messageTimer) clearInterval(messageTimer);
+				if (status) status.textContent = 'El servidor no respondió. Reintenta más tarde.';
+				notifications.toast({
+					title: 'Sin conexión',
+					text: 'El servidor no respondió. Reintenta más tarde.',
+					icon: 'error',
+					duration: 5000,
+				});
+			});
+		</script>
+	) : (
+		<ReflectionView reflection={reflection} />
+	)}
 </Layout>

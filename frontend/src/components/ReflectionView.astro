@@ -22,9 +22,6 @@ interface Props {
 <span>Otra reflexión</span>
 	</button>
 
-
-
-
 <div
 	id="container"
 	class="min-h-screen bg-[#f7f6f1] text-stone-700 selection:bg-emerald-100 selection:text-emerald-950"
@@ -136,13 +133,41 @@ interface Props {
 </div>
 
 <script>
-	import { getRandomReflection } from '../lib/api'
+	import { getRandomReflection, serverReady } from '../lib/api'
+	import { notifications } from '../lib/notifications';
+	const randomButton = document.getElementById('random-reflection-button');
 
-	const boton = document.getElementById('random-reflection-button');
+	const serverReadyPromise = serverReady(() => {
+		notifications.toast({
+			title: 'Conectando',
+			text: 'El servidor está despertando…',
+			icon: 'warning',
+			duration: 5000,
+		});
+	});
+
+	serverReadyPromise.then(() => {
+		notifications.toast({
+			title: 'Servidor listo',
+			text: 'Ya puedes pedir otra reflexión.',
+			icon: 'success',
+			duration: 3000,
+		});
+	}).catch(() => {
+		notifications.toast({
+			title: 'Sin conexión',
+			text: 'El servidor no respondió. Intenta de nuevo más tarde.',
+			icon: 'error',
+			duration: 5000,
+		});
+	});
+
+	const boton = randomButton;
 	if (boton) {
 	boton.addEventListener('click', async () => {
 		boton.disabled = true; // Disable the button to prevent multiple clicks
 		try {
+			await serverReadyPromise;
 			const reflection = await getRandomReflection();
 			if (reflection) {
 				// Update the page with the new reflection
@@ -170,7 +195,12 @@ interface Props {
 			}
 		}
 		catch (error) {
-			console.error('Error updating reflection:', error);
+			notifications.toast({
+				title: 'No se pudo cargar',
+				text: 'No pudimos obtener otra reflexión. Intenta nuevamente.',
+				icon: 'error',
+				duration: 5000,
+			});
 		} finally {
 			boton.disabled = false; // Re-enable the button after the operation
 		}

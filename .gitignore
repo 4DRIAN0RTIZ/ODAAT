@@ -3,4 +3,9 @@ __pycache__/
 *.pyc
 .env
 .atl/
-.harness/
+
+# arnés multiagente (local, no se commitea)
+/docs/
+/progress/
+/CHECKPOINTS.md
+/init.sh
