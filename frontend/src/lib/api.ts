@@ -8,7 +8,7 @@ export interface Reflection {
 	source_url: string;
 }
 
-const API_BASE_URL = 'http://127.0.0.1:8811';
+const API_BASE_URL = 'https://odaat.onrender.com';
 
 export async function getTodaysReflection(): Promise<Reflection> {
 	const response = await fetch(`${API_BASE_URL}/reflections/today`);
