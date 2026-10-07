@@ -1,6 +1,11 @@
 ---
 import favicon from "../assets/favicon.webp";
 import "../styles/global.css";
+
+const siteUrl = Astro.site ?? new URL('https://odaat.cuevaneander.tech');
+const ogImageUrl = new URL('/ogimage.png', siteUrl);
+const pageTitle = 'ODAAT — Once Day At A Time';
+const pageDescription = 'Reflexiones diarias para acompañar cada día con una pausa, una lectura y un momento de reflexión.';
 ---
 <!doctype html>
 <html lang="es">
@@ -11,7 +16,25 @@ import "../styles/global.css";
 		<link rel="stylesheet" href="/crystal-alert.min.css" />
 		<script src="/crystal-alert.min.js" is:inline></script>
 		<meta name="generator" content={Astro.generator} />
-		<title>ODAAT - Once Day At A Time</title>
+		<meta name="description" content={pageDescription} />
+		<link rel="canonical" href={siteUrl} />
+		<meta name="theme-color" content="#f7f6f1" />
+		<meta property="og:type" content="website" />
+		<meta property="og:locale" content="es_ES" />
+		<meta property="og:url" content={siteUrl} />
+		<meta property="og:site_name" content="ODAAT" />
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content={pageDescription} />
+		<meta property="og:image" content={ogImageUrl} />
+		<meta property="og:image:width" content="1731" />
+		<meta property="og:image:height" content="909" />
+		<meta property="og:image:alt" content="ODAAT — Una pausa, una lectura, un día a la vez." />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={pageTitle} />
+		<meta name="twitter:description" content={pageDescription} />
+		<meta name="twitter:image" content={ogImageUrl} />
+		<meta name="twitter:image:alt" content="ODAAT — Una pausa, una lectura, un día a la vez." />
+		<title>{pageTitle}</title>
 	</head>
 	<body>
 		<slot />
