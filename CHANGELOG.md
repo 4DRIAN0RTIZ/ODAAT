@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Bug Fixes
+
+- Use Mexico City timezone for daily reflections ([76c249b](https://github.com/4DRIAN0RTIZ/ODAAT/commit/76c249be7d5bfe42274ed88b6e9df1636b46ac0d))
+
 ## [0.4.0] - 2026-10-07
 
 ### Chore
