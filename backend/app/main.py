@@ -1,13 +1,15 @@
 import json
 import random
-from datetime import date
+from datetime import datetime
 from functools import lru_cache
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi import FastAPI, HTTPException
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "reflections.json"
+MEXICO_CITY_TIMEZONE = ZoneInfo("America/Mexico_City")
 
 app = FastAPI(title="Reflexiones Diarias API", version="1.0.0")
 CORS_ORIGINS = [
@@ -45,7 +47,7 @@ def list_all():
 
 @app.get("/reflections/today")
 def today():
-    now = date.today()
+    now = datetime.now(MEXICO_CITY_TIMEZONE).date()
     return _get(now.month, now.day)
 
 
