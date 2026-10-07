@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Features
+
+- Add Open Graph metadata and image ([ea7e3c3](https://github.com/4DRIAN0RTIZ/ODAAT/commit/ea7e3c3a79c67bd5ddfaf0d1f97cbb20185bba25))
+
 ## [0.3.3] - 2026-10-04
 
 ### Bug Fixes
