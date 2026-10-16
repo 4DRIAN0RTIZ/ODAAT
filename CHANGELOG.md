@@ -8,6 +8,14 @@ All notable changes to this project are documented here.
 
 - Use Mexico City timezone for daily reflections ([76c249b](https://github.com/4DRIAN0RTIZ/ODAAT/commit/76c249be7d5bfe42274ed88b6e9df1636b46ac0d))
 
+### CI
+
+- Rename develop branch to dev ([51a448c](https://github.com/4DRIAN0RTIZ/ODAAT/commit/51a448c67a3bd1afcf52dc6c9558d498fb5d9d0c))
+
+### Chore
+
+- Update CHANGELOG.md [skip ci] ([46e01c3](https://github.com/4DRIAN0RTIZ/ODAAT/commit/46e01c39f0a36489650ec81f0f35598f43ada7c9))
+
 ## [0.4.0] - 2026-10-07
 
 ### Chore
