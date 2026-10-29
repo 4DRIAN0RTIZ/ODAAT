@@ -2,11 +2,15 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.4.2] - 2026-10-29
 
 ### Bug Fixes
 
 - Keep ODAAT site link in reflection footer ([2581195](https://github.com/4DRIAN0RTIZ/ODAAT/commit/25811954381238140caad3b75d6fa721db76db82))
+
+### Chore
+
+- Update CHANGELOG.md [skip ci] ([72ff42e](https://github.com/4DRIAN0RTIZ/ODAAT/commit/72ff42e615c9d5ec0701222849396d9affd80cbe))
 
 ## [0.4.1] - 2026-10-29
 
