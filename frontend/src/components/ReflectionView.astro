@@ -88,7 +88,7 @@ interface Props {
 				>
 					{
 						Astro.props.reflection.paragraphs.map(
-							(paragraph, index) => (
+							(paragraph) => (
 								<p>
 									{paragraph}
 								</p>
@@ -101,7 +101,7 @@ interface Props {
 			<!-- Source -->
 			<footer class="mt-10 flex justify-center">
 				<a
-					href="https://odaat.cuevaneander.tech"
+					href={Astro.props.reflection.source_url || 'https://odaat.cuevaneander.tech'}
 					target="_blank"
 					rel="noopener noreferrer"
 					class="group inline-flex max-w-full items-center gap-3 rounded-full px-4 py-2 text-sm text-stone-500 transition-all duration-300 hover:bg-white/70 hover:text-emerald-800"
@@ -126,7 +126,7 @@ interface Props {
 
 					<span class="truncate"
 						id="reflection-source-text">
-						https://odaat.cuevaneander.tech
+						{Astro.props.reflection.source_url || 'https://odaat.cuevaneander.tech'}
 					</span>
 				</a>
 			</footer>
@@ -135,81 +135,29 @@ interface Props {
 </div>
 
 <script>
-	import { getRandomReflection, serverReady } from '../lib/api'
+	import { getRandomReflection } from '../lib/api'
+	import { applyReflectionToDom } from '../lib/dom'
 	import { notifications } from '../lib/notifications';
-	const randomButton = document.getElementById('random-reflection-button');
 
-	const serverReadyPromise = serverReady(() => {
-		notifications.toast({
-			title: 'Conectando',
-			text: 'El servidor está despertando…',
-			icon: 'warning',
-			duration: 5000,
-		});
-	});
-
-	serverReadyPromise.then(() => {
-		if (randomButton instanceof HTMLButtonElement) {
-			randomButton.disabled = false;
-			randomButton.removeAttribute('aria-busy');
-		}
-		notifications.toast({
-			title: 'Servidor listo',
-			text: 'Ya puedes pedir otra reflexión.',
-			icon: 'success',
-			duration: 3000,
-		});
-	}).catch(() => {
-		notifications.toast({
-			title: 'Sin conexión',
-			text: 'El servidor no respondió. Intenta de nuevo más tarde.',
-			icon: 'error',
-			duration: 5000,
-		});
-	});
-
-	const boton = randomButton;
-	if (boton instanceof HTMLButtonElement) {
-	boton.addEventListener('click', async () => {
-		boton.disabled = true; // Disable the button to prevent multiple clicks
-		try {
-			await serverReadyPromise;
-			const reflection = await getRandomReflection();
-			if (reflection) {
-				// Update the page with the new reflection
-				const reflectionTitle = document.getElementById('reflection-title');
-				const reflectionDate = document.getElementById('reflection-date');
-				const reflectionParagraphs = document.getElementById('reflection-paragraphs');
-				const reflectionSource = document.getElementById('reflection-source');
-				const reflectionSourceText = document.getElementById('reflection-source-text');
-
-				if (!reflectionTitle || !reflectionDate || !reflectionParagraphs || !reflectionSource || !reflectionSourceText || !(reflectionSource instanceof HTMLAnchorElement)) {
-					console.error('One or more elements not found');
-					return;
-				}
-
-				reflectionTitle.textContent = reflection.title;
-				reflectionDate.textContent = reflection.date_label;
-				reflectionParagraphs.replaceChildren();
-				reflection.paragraphs.forEach(paragraph => {
-					const p = document.createElement('p');
-					p.textContent = paragraph;
-					reflectionParagraphs.appendChild(p);
+	const boton = document.getElementById('random-reflection-button');
+	if (!(boton instanceof HTMLButtonElement)) {
+		// Shell not present
+	} else {
+		boton.addEventListener('click', async () => {
+			boton.disabled = true;
+			try {
+				const reflection = await getRandomReflection();
+				applyReflectionToDom(reflection);
+			} catch {
+				notifications.toast({
+					title: 'No se pudo cargar',
+					text: 'No pudimos obtener otra reflexión. Intenta nuevamente.',
+					icon: 'error',
+					duration: 5000,
 				});
-				reflectionSource.href = reflection.source_url;
-				reflectionSourceText.textContent = reflection.source_url;
+			} finally {
+				boton.disabled = false;
 			}
-		}
-		catch (error) {
-			notifications.toast({
-				title: 'No se pudo cargar',
-				text: 'No pudimos obtener otra reflexión. Intenta nuevamente.',
-				icon: 'error',
-				duration: 5000,
-			});
-		} finally {
-			boton.disabled = false; // Re-enable the button after the operation
-		}
-	});
+		});
 	}
 </script>
