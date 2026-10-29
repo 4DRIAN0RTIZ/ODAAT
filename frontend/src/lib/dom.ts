@@ -4,17 +4,8 @@ export function applyReflectionToDom(reflection: Reflection): void {
 	const reflectionTitle = document.getElementById('reflection-title');
 	const reflectionDate = document.getElementById('reflection-date');
 	const reflectionParagraphs = document.getElementById('reflection-paragraphs');
-	const reflectionSource = document.getElementById('reflection-source');
-	const reflectionSourceText = document.getElementById('reflection-source-text');
 
-	if (
-		!reflectionTitle ||
-		!reflectionDate ||
-		!reflectionParagraphs ||
-		!reflectionSource ||
-		!reflectionSourceText ||
-		!(reflectionSource instanceof HTMLAnchorElement)
-	) {
+	if (!reflectionTitle || !reflectionDate || !reflectionParagraphs) {
 		throw new Error('Reflection DOM nodes not found');
 	}
 
@@ -26,6 +17,4 @@ export function applyReflectionToDom(reflection: Reflection): void {
 		p.textContent = paragraph;
 		reflectionParagraphs.appendChild(p);
 	}
-	reflectionSource.href = reflection.source_url;
-	reflectionSourceText.textContent = reflection.source_url;
 }
