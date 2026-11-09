@@ -98,6 +98,28 @@ interface Props {
 				</div>
 			</section>
 
+			<!-- Image actions -->
+			<div class="mt-8 flex flex-wrap justify-center gap-3">
+				<button
+					id="download-reflection-button"
+					type="button"
+					class="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/60 px-4 py-2 font-serif text-sm tracking-wide text-stone-600 shadow-sm backdrop-blur transition-all duration-300 hover:border-emerald-200 hover:bg-white/80 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+					disabled
+					aria-busy="true"
+				>
+					<span>Descargar imagen</span>
+				</button>
+				<button
+					id="share-reflection-button"
+					type="button"
+					class="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/60 px-4 py-2 font-serif text-sm tracking-wide text-stone-600 shadow-sm backdrop-blur transition-all duration-300 hover:border-emerald-200 hover:bg-white/80 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+					disabled
+					aria-busy="true"
+				>
+					<span>Copiar imagen</span>
+				</button>
+			</div>
+
 			<!-- Source -->
 			<footer class="mt-10 flex justify-center">
 				<a
@@ -138,6 +160,110 @@ interface Props {
 	import { getRandomReflection } from '../lib/api'
 	import { applyReflectionToDom } from '../lib/dom'
 	import { notifications } from '../lib/notifications';
+	import { canShareFiles, renderReflectionPng, slugify } from '../lib/share-image';
+
+	const downloadButton = document.getElementById('download-reflection-button');
+	const shareButton = document.getElementById('share-reflection-button');
+
+	function readCurrentReflection() {
+		const title = document.getElementById('reflection-title')?.textContent?.trim() ?? '';
+		const date_label = document.getElementById('reflection-date')?.textContent?.trim() ?? '';
+		const paragraphs = Array.from(
+			document.querySelectorAll('#reflection-paragraphs p'),
+			(p) => p.textContent?.trim() ?? '',
+		).filter(Boolean);
+		return { title, date_label, paragraphs };
+	}
+
+	async function buildImageFile(): Promise<File> {
+		const reflection = readCurrentReflection();
+		const blob = await renderReflectionPng(reflection);
+		return new File([blob], `odaat-${slugify(reflection.title)}.png`, { type: 'image/png' });
+	}
+
+	function downloadFile(file: File) {
+		const url = URL.createObjectURL(file);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = file.name;
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		setTimeout(() => URL.revokeObjectURL(url), 1000);
+	}
+
+	async function copyImageToClipboard(file: File): Promise<boolean> {
+		if (typeof ClipboardItem === 'undefined' || !navigator.clipboard?.write) return false;
+		try {
+			await navigator.clipboard.write([new ClipboardItem({ [file.type]: file })]);
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
+	function toastImageError() {
+		notifications.toast({
+			title: 'No se pudo crear la imagen',
+			text: 'No pudimos generar la imagen. Intenta nuevamente.',
+			icon: 'error',
+			duration: 5000,
+		});
+	}
+
+	if (downloadButton instanceof HTMLButtonElement) {
+		downloadButton.addEventListener('click', async () => {
+			downloadButton.disabled = true;
+			try {
+				downloadFile(await buildImageFile());
+			} catch {
+				toastImageError();
+			} finally {
+				downloadButton.disabled = false;
+			}
+		});
+	}
+
+	if (shareButton instanceof HTMLButtonElement) {
+		const probe = new File([], 'probe.png', { type: 'image/png' });
+		if (canShareFiles(navigator, probe)) {
+			const label = shareButton.querySelector('span');
+			if (label) label.textContent = 'Compartir imagen';
+		}
+		shareButton.addEventListener('click', async () => {
+			shareButton.disabled = true;
+			try {
+				const file = await buildImageFile();
+				if (canShareFiles(navigator, file)) {
+					try {
+						await navigator.share({ files: [file], title: file.name });
+					} catch (error) {
+						// Closing the share sheet is not an error.
+						if (!(error instanceof DOMException && error.name === 'AbortError')) throw error;
+					}
+				} else if (await copyImageToClipboard(file)) {
+					notifications.toast({
+						title: 'Imagen copiada',
+						text: 'Pégala donde quieras compartirla.',
+						icon: 'success',
+						duration: 4000,
+					});
+				} else {
+					downloadFile(file);
+					notifications.toast({
+						title: 'Compartir no disponible',
+						text: 'Tu navegador no puede compartir ni copiar imágenes. Descargamos el PNG para que lo compartas manualmente.',
+						icon: 'info',
+						duration: 6000,
+					});
+				}
+			} catch {
+				toastImageError();
+			} finally {
+				shareButton.disabled = false;
+			}
+		});
+	}
 
 	const boton = document.getElementById('random-reflection-button');
 	if (!(boton instanceof HTMLButtonElement)) {
