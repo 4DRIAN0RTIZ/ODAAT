@@ -78,6 +78,8 @@ const placeholderReflection = {
 		const overlay = document.getElementById('connecting-overlay');
 		const reflectionRoot = document.getElementById('reflection-root');
 		const randomButton = document.getElementById('random-reflection-button');
+		const downloadButton = document.getElementById('download-reflection-button');
+		const shareButton = document.getElementById('share-reflection-button');
 		let messageIndex = 0;
 		let messageTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -97,9 +99,11 @@ const placeholderReflection = {
 				reflectionRoot.hidden = false;
 				reflectionRoot.classList.remove('hidden');
 			}
-			if (randomButton instanceof HTMLButtonElement) {
-				randomButton.disabled = false;
-				randomButton.removeAttribute('aria-busy');
+			for (const button of [randomButton, downloadButton, shareButton]) {
+				if (button instanceof HTMLButtonElement) {
+					button.disabled = false;
+					button.removeAttribute('aria-busy');
+				}
 			}
 		}
 
