@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Features
+
+- Download and share reflection as image ([67c4fdc](https://github.com/4DRIAN0RTIZ/ODAAT/commit/67c4fdc6e9e4e2320f5d4a743c14750a01cee3c9))
+
 ## [0.4.2] - 2026-10-29
 
 ### Bug Fixes
