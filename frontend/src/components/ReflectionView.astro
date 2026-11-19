@@ -118,6 +118,15 @@ interface Props {
 				>
 					<span>Copiar imagen</span>
 				</button>
+				<button
+					id="copy-text-reflection-button"
+					type="button"
+					class="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/60 px-4 py-2 font-serif text-sm tracking-wide text-stone-600 shadow-sm backdrop-blur transition-all duration-300 hover:border-emerald-200 hover:bg-white/80 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+					disabled
+					aria-busy="true"
+				>
+					<span>Copiar texto</span>
+				</button>
 			</div>
 
 			<!-- Source -->
@@ -160,10 +169,12 @@ interface Props {
 	import { getRandomReflection } from '../lib/api'
 	import { applyReflectionToDom } from '../lib/dom'
 	import { notifications } from '../lib/notifications';
+	import { formatReflectionText } from '../lib/reflection-text';
 	import { canShareFiles, renderReflectionPng, slugify } from '../lib/share-image';
 
 	const downloadButton = document.getElementById('download-reflection-button');
 	const shareButton = document.getElementById('share-reflection-button');
+	const copyTextButton = document.getElementById('copy-text-reflection-button');
 
 	function readCurrentReflection() {
 		const title = document.getElementById('reflection-title')?.textContent?.trim() ?? '';
@@ -261,6 +272,51 @@ interface Props {
 				toastImageError();
 			} finally {
 				shareButton.disabled = false;
+			}
+		});
+	}
+
+	function copyTextFallback(text: string): boolean {
+		const textarea = document.createElement('textarea');
+		textarea.value = text;
+		textarea.setAttribute('readonly', '');
+		textarea.style.position = 'fixed';
+		textarea.style.opacity = '0';
+		document.body.appendChild(textarea);
+		textarea.select();
+		try {
+			return document.execCommand('copy');
+		} catch {
+			return false;
+		} finally {
+			textarea.remove();
+		}
+	}
+
+	async function copyText(text: string): Promise<boolean> {
+		if (navigator.clipboard?.writeText) {
+			try {
+				await navigator.clipboard.writeText(text);
+				return true;
+			} catch {
+				// Fall through to the legacy path.
+			}
+		}
+		return copyTextFallback(text);
+	}
+
+	if (copyTextButton instanceof HTMLButtonElement) {
+		copyTextButton.addEventListener('click', async () => {
+			copyTextButton.disabled = true;
+			try {
+				const ok = await copyText(formatReflectionText(readCurrentReflection()));
+				notifications.toast(
+					ok
+						? { title: 'Texto copiado', text: 'Pégalo donde quieras compartirlo.', icon: 'success', duration: 4000 }
+						: { title: 'No se pudo copiar', text: 'No pudimos copiar el texto. Intenta nuevamente.', icon: 'error', duration: 5000 },
+				);
+			} finally {
+				copyTextButton.disabled = false;
 			}
 		});
 	}
