@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { monthDayFromDateInput, tomorrowInMexicoCity } from './date.ts';
+import { todayInMexicoCity, tomorrowInMexicoCity } from './date.ts';
 
 test('tomorrow: regular day', () => {
 	// 2026-11-19 18:00 UTC = 12:00 in Mexico City
@@ -37,23 +37,12 @@ test('tomorrow: Feb 29 goes to Mar 1', () => {
 	assert.deepEqual(tomorrowInMexicoCity(new Date('2028-02-29T18:00:00Z')), { month: 3, day: 1 });
 });
 
-test('input date: converts to month and day without leading zeros', () => {
-	assert.deepEqual(monthDayFromDateInput('2026-03-05'), { month: 3, day: 5 });
-	assert.deepEqual(monthDayFromDateInput('2026-12-31'), { month: 12, day: 31 });
+test('today: uses the Mexico City calendar, not UTC (UTC already next day)', () => {
+	// 2026-11-20 03:00 UTC = 2026-11-19 21:00 in Mexico City
+	assert.deepEqual(todayInMexicoCity(new Date('2026-11-20T03:00:00Z')), { year: 2026, month: 11, day: 19 });
 });
 
-test('input date: accepts Feb 29 on a leap year', () => {
-	assert.deepEqual(monthDayFromDateInput('2024-02-29'), { month: 2, day: 29 });
-});
-
-test('input date: rejects empty and malformed values', () => {
-	assert.equal(monthDayFromDateInput(''), null);
-	assert.equal(monthDayFromDateInput('2026-3-5'), null);
-	assert.equal(monthDayFromDateInput('not-a-date'), null);
-});
-
-test('input date: rejects impossible dates', () => {
-	assert.equal(monthDayFromDateInput('2026-02-30'), null);
-	assert.equal(monthDayFromDateInput('2026-13-01'), null);
-	assert.equal(monthDayFromDateInput('2027-02-29'), null);
+test('today: crosses year boundary using Mexico City time', () => {
+	// 2027-01-01 03:00 UTC = 2026-12-31 21:00 in Mexico City
+	assert.deepEqual(todayInMexicoCity(new Date('2027-01-01T03:00:00Z')), { year: 2026, month: 12, day: 31 });
 });

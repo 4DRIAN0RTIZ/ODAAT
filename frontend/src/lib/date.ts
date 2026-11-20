@@ -18,24 +18,15 @@ function mexicoCityDate(now: Date): { year: number; month: number; day: number }
 	return { year: read('year'), month: read('month'), day: read('day') };
 }
 
+/** Calendar date of `now` in Mexico City. */
+export function todayInMexicoCity(now: Date): { year: number; month: number; day: number } {
+	return mexicoCityDate(now);
+}
+
 /** Month/day of the day after `now`, according to the calendar in Mexico City. */
 export function tomorrowInMexicoCity(now: Date): MonthDay {
 	const { year, month, day } = mexicoCityDate(now);
 	// Pure calendar arithmetic in UTC: no local time zone or DST involved.
 	const next = new Date(Date.UTC(year, month - 1, day + 1));
 	return { month: next.getUTCMonth() + 1, day: next.getUTCDate() };
-}
-
-/** Converts the value of `<input type="date">` (YYYY-MM-DD) to month/day, or null if invalid. */
-export function monthDayFromDateInput(value: string): MonthDay | null {
-	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-	if (!match) return null;
-	const year = Number(match[1]);
-	const month = Number(match[2]);
-	const day = Number(match[3]);
-	const date = new Date(Date.UTC(year, month - 1, day));
-	if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
-		return null;
-	}
-	return { month, day };
 }

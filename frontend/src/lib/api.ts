@@ -1,6 +1,6 @@
 export interface Reflection {
-	month: string;
-	day: string;
+	month: number;
+	day: number;
 	date_label: string;
 	title: string;
 	paragraphs: string[];
@@ -46,6 +46,16 @@ export async function getReflectionByMonthDay(month: number, day: number): Promi
 	}
 	if (!response.ok) {
 		throw new Error(`Failed to fetch reflection for ${month}/${day}: ${response.statusText}`);
+	}
+
+	const data = await response.json();
+	return data;
+}
+
+export async function getAllReflections(): Promise<Reflection[]> {
+	const response = await fetch(`${API_BASE_URL}/reflections`);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch reflections: ${response.statusText}`);
 	}
 
 	const data = await response.json();
