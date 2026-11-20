@@ -17,6 +17,16 @@ class NotificationService {
 			position: 'bottom-right',
 		});
 	}
+
+	/** Shown when an action that needs the API is attempted without a connection. */
+	offline(): void {
+		this.toast({
+			title: 'Sin conexión',
+			text: 'Esta acción necesita internet. Aún puedes leer, copiar, descargar o compartir la reflexión actual.',
+			icon: 'warning',
+			duration: 4000,
+		});
+	}
 }
 
 export const notifications = new NotificationService();

@@ -2,6 +2,26 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Bug Fixes
+
+- Add missing October 21 reflection ([b43973e](https://github.com/4DRIAN0RTIZ/ODAAT/commit/b43973eedf750da2eadc3176e9103973a2fb850c))
+
+### Chore
+
+- Update CHANGELOG.md [skip ci] ([10aee06](https://github.com/4DRIAN0RTIZ/ODAAT/commit/10aee06838150b86f29f69423425453bada2d19b))
+- Update CHANGELOG.md [skip ci] ([678967d](https://github.com/4DRIAN0RTIZ/ODAAT/commit/678967db02915d2ce8690e70fcd35cb5fda3a706))
+- Update CHANGELOG.md [skip ci] ([afaf63b](https://github.com/4DRIAN0RTIZ/ODAAT/commit/afaf63b28f54c705e9141bf2f3a14bf9a752be7b))
+- Update CHANGELOG.md [skip ci] ([5e8695c](https://github.com/4DRIAN0RTIZ/ODAAT/commit/5e8695c1f4613dbc152968ed07968464c6711cbd))
+
+### Features
+
+- Make ODAAT an installable PWA with offline support ([c68a929](https://github.com/4DRIAN0RTIZ/ODAAT/commit/c68a9293fd46e478ae6d622ae647cf77f2e71b8d))
+- Add reflection history calendar with shareable date links ([9ccc77e](https://github.com/4DRIAN0RTIZ/ODAAT/commit/9ccc77e1528339621d10e818a991a8fe8d9d6aa9))
+- Read tomorrow or a custom date reflection ([42b677f](https://github.com/4DRIAN0RTIZ/ODAAT/commit/42b677f9245ae86a8ae85bfd5d239b6bfab28393))
+- Copy reflection text to clipboard ([9cd42b8](https://github.com/4DRIAN0RTIZ/ODAAT/commit/9cd42b82c67a266f9e80c3ba3f9043b00da02891))
+
 ## [0.5.0] - 2026-11-09
 
 ### Chore

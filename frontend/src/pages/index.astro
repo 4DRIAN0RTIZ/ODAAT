@@ -5,8 +5,8 @@ import Layout from '../layouts/Layout.astro';
 // Static shell only — today's reflection is always fetched client-side after
 // the free-tier API wakes, so a previous day's build never sticks around.
 const placeholderReflection = {
-	month: '',
-	day: '',
+	month: 0,
+	day: 0,
 	date_label: '',
 	title: '…',
 	paragraphs: [] as string[],
@@ -25,6 +25,14 @@ const placeholderReflection = {
 			<p id="server-status" class="mt-4" role="status" aria-live="polite">
 				Comprobando la conexión.
 			</p>
+			<button
+				id="retry-connection-button"
+				type="button"
+				hidden
+				class="mt-6 inline-flex items-center rounded-full border border-stone-200/80 bg-white/60 px-4 py-2 font-serif text-sm tracking-wide text-stone-600 shadow-sm transition-all duration-300 hover:border-emerald-200 hover:bg-white/80 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
+			>
+				Reintentar
+			</button>
 		</section>
 	</main>
 
@@ -32,9 +40,30 @@ const placeholderReflection = {
 		<ReflectionView reflection={placeholderReflection} />
 	</div>
 
+	<div
+		id="offline-banner"
+		role="status"
+		hidden
+		class="fixed inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-900"
+		style="z-index: 10000;"
+	>
+		<span id="offline-banner-text"></span>
+		<button
+			id="offline-banner-retry"
+			type="button"
+			hidden
+			class="rounded-full border border-amber-300 bg-white/70 px-3 py-1 font-serif text-sm text-amber-900 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
+		>
+			Actualizar
+		</button>
+	</div>
+
 	<script>
-		import { getTodaysReflection, serverReady } from '../lib/api';
-		import { applyReflectionToDom } from '../lib/dom';
+		import { getReflectionByMonthDay, getTodaysReflection, ReflectionNotFoundError, serverReady, type Reflection } from '../lib/api';
+		import { parseFechaParam } from '../lib/calendar';
+		import { decideStartup, isOffline, offlineBannerText, type FetchOutcome } from '../lib/connectivity';
+		import { applyReflectionToDom, syncUrlWithReflection } from '../lib/dom';
+		import { loadLastReflection } from '../lib/last-reflection';
 		import { notifications } from '../lib/notifications';
 
 		const MESSAGES_IDLE = [
@@ -73,13 +102,21 @@ const placeholderReflection = {
 			'¡Gracias por esperar con nosotros!',
 		];
 		const WAKEUP_AFTER_MS = 15000;
-		const waitStartedAt = Date.now();
+		let waitStartedAt = Date.now();
 		const status = document.getElementById('server-status');
+		const statusTitle = document.getElementById('server-status-title');
+		const retryButton = document.getElementById('retry-connection-button');
+		const banner = document.getElementById('offline-banner');
+		const bannerText = document.getElementById('offline-banner-text');
+		const bannerRetry = document.getElementById('offline-banner-retry');
 		const overlay = document.getElementById('connecting-overlay');
 		const reflectionRoot = document.getElementById('reflection-root');
 		const randomButton = document.getElementById('random-reflection-button');
+		const tomorrowButton = document.getElementById('tomorrow-reflection-button');
+		const calendarButton = document.getElementById('calendar-reflection-button');
 		const downloadButton = document.getElementById('download-reflection-button');
 		const shareButton = document.getElementById('share-reflection-button');
+		const copyTextButton = document.getElementById('copy-text-reflection-button');
 		let messageIndex = 0;
 		let messageTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -99,7 +136,7 @@ const placeholderReflection = {
 				reflectionRoot.hidden = false;
 				reflectionRoot.classList.remove('hidden');
 			}
-			for (const button of [randomButton, downloadButton, shareButton]) {
+			for (const button of [randomButton, tomorrowButton, calendarButton, downloadButton, shareButton, copyTextButton]) {
 				if (button instanceof HTMLButtonElement) {
 					button.disabled = false;
 					button.removeAttribute('aria-busy');
@@ -107,36 +144,181 @@ const placeholderReflection = {
 			}
 		}
 
-		notifications.toast({
-			title: 'Conectando',
-			text: 'El servidor está despertando…',
-			icon: 'warning',
-			duration: 5000,
-		});
-		showNextMessage();
-		messageTimer = setInterval(showNextMessage, 3000);
+		const requestedDate = parseFechaParam(new URLSearchParams(window.location.search).get('fecha'));
 
-		serverReady()
-			.then(() => getTodaysReflection())
-			.then((reflection) => {
+		// A shared link (?fecha=MM-DD) shows that day; a missing or unavailable day falls back to today's.
+		async function loadInitialReflection(): Promise<{ reflection: Reflection; isRequested: boolean }> {
+			if (requestedDate) {
+				try {
+					return {
+						reflection: await getReflectionByMonthDay(requestedDate.month, requestedDate.day),
+						isRequested: true,
+					};
+				} catch (error) {
+					if (error instanceof ReflectionNotFoundError) {
+						notifications.toast({
+							title: 'Sin reflexión',
+							text: 'No hay una reflexión disponible para esa fecha. Te mostramos la de hoy.',
+							icon: 'info',
+							duration: 5000,
+						});
+					}
+				}
+			}
+			return { reflection: await getTodaysReflection(), isRequested: false };
+		}
+
+		function displayedDateLabel(): string {
+			return document.getElementById('reflection-date')?.textContent?.trim() ?? '';
+		}
+
+		// True while the reflection on screen came from the local copy, not the server.
+		let showingCached = false;
+
+		function showBanner(mode: 'offline' | 'back-online' | 'hidden') {
+			if (!banner || !bannerText || !(bannerRetry instanceof HTMLButtonElement)) return;
+			banner.hidden = mode === 'hidden';
+			bannerRetry.hidden = mode !== 'back-online' && !(mode === 'offline' && !isOffline(navigator));
+			bannerRetry.disabled = false;
+			if (mode === 'offline') {
+				bannerText.textContent = offlineBannerText(displayedDateLabel());
+			} else if (mode === 'back-online') {
+				bannerText.textContent = 'Conexión restablecida. Puedes actualizar para ver la reflexión de hoy.';
+			}
+		}
+
+		function showOverlayMessage(title: string, text: string) {
+			if (messageTimer) clearInterval(messageTimer);
+			if (statusTitle) statusTitle.textContent = title;
+			if (status) status.textContent = text;
+			if (retryButton instanceof HTMLButtonElement) {
+				retryButton.hidden = false;
+				retryButton.disabled = false;
+			}
+		}
+
+		function resetOverlayToWaiting() {
+			if (statusTitle) statusTitle.textContent = 'Conectando con el servidor…';
+			if (retryButton instanceof HTMLButtonElement) retryButton.hidden = true;
+			messageIndex = 0;
+			waitStartedAt = Date.now();
+			if (messageTimer) clearInterval(messageTimer);
+			showNextMessage();
+			messageTimer = setInterval(showNextMessage, 3000);
+		}
+
+		// Resolves when the browser reports it went offline; call the returned function to stop listening.
+		function watchOffline(): { promise: Promise<void>; stop: () => void } {
+			let listener = () => {};
+			const promise = new Promise<void>((resolve) => {
+				listener = () => resolve();
+				window.addEventListener('offline', listener, { once: true });
+			});
+			return { promise, stop: () => window.removeEventListener('offline', listener) };
+		}
+
+		// Only the most recent start() may touch the screen; older ones are abandoned.
+		let currentAttempt = 0;
+
+		/**
+		 * Runs the startup flow. `silent` is a retry from the banner: the reflection
+		 * already on screen is kept unless the server answers.
+		 */
+		async function start(silent = false) {
+			const attempt = ++currentAttempt;
+			const cached = loadLastReflection();
+			const hasCached = cached !== null;
+			const online = () => !isOffline(navigator);
+
+			let view = decideStartup({ online: online(), hasCached, outcome: 'pending' });
+			const loaded: { value: { reflection: Reflection; isRequested: boolean } | null } = { value: null };
+
+			if (view === 'wait') {
+				if (!silent) {
+					resetOverlayToWaiting();
+					notifications.toast({
+						title: 'Conectando',
+						text: 'El servidor está despertando…',
+						icon: 'warning',
+						duration: 5000,
+					});
+				}
+				const offline = watchOffline();
+				const outcome: FetchOutcome = await Promise.race([
+					serverReady().then(loadInitialReflection).then(
+						(result) => {
+							loaded.value = result;
+							return 'success' as const;
+						},
+						() => 'failed' as const,
+					),
+					offline.promise.then(() => 'failed' as const),
+				]);
+				offline.stop();
+				if (attempt !== currentAttempt) return;
+				view = decideStartup({ online: online(), hasCached, outcome });
+			}
+
+			if (view === 'live' && loaded.value) {
+				const { reflection, isRequested } = loaded.value;
 				applyReflectionToDom(reflection);
+				syncUrlWithReflection(reflection);
+				showingCached = false;
+				showBanner('hidden');
 				revealReflection();
-				notifications.toast({
-					title: 'Servidor listo',
-					text: 'Esta es la reflexión de hoy.',
-					icon: 'success',
-					duration: 3000,
-				});
-			})
-			.catch(() => {
-				if (messageTimer) clearInterval(messageTimer);
-				if (status) status.textContent = 'El servidor no respondió. Reintenta más tarde.';
-				notifications.toast({
-					title: 'Sin conexión',
-					text: 'El servidor no respondió. Reintenta más tarde.',
-					icon: 'error',
-					duration: 5000,
+				if (!isRequested) {
+					notifications.toast({
+						title: 'Servidor listo',
+						text: 'Esta es la reflexión de hoy.',
+						icon: 'success',
+						duration: 3000,
+					});
+				}
+			} else if (view === 'cached' && cached) {
+				if (!silent) {
+					applyReflectionToDom(cached);
+					syncUrlWithReflection(cached);
+					revealReflection();
+				}
+				showingCached = true;
+				showBanner('offline');
+			} else if (!silent) {
+				if (view === 'offline-message') {
+					showOverlayMessage(
+						'Sin conexión',
+						'No hay conexión a internet y todavía no hay ninguna reflexión guardada en este dispositivo. Conéctate y vuelve a intentarlo.',
+					);
+				} else {
+					showOverlayMessage('Sin respuesta', 'El servidor no respondió. Reintenta más tarde.');
+				}
+			}
+		}
+
+		// Connection returned: with a reflection on screen offer a manual refresh (never swap the text
+		// under the reader); with only the error overlay there is nothing to disturb, so retry automatically.
+		window.addEventListener('online', () => {
+			if (overlay?.isConnected) {
+				if (retryButton instanceof HTMLButtonElement && !retryButton.hidden) void start();
+				return;
+			}
+			showBanner(showingCached ? 'back-online' : 'hidden');
+		});
+
+		window.addEventListener('offline', () => {
+			if (overlay?.isConnected) return;
+			showBanner('offline');
+		});
+
+		retryButton?.addEventListener('click', () => void start());
+		if (bannerRetry instanceof HTMLButtonElement) {
+			bannerRetry.addEventListener('click', () => {
+				bannerRetry.disabled = true;
+				void start(true).finally(() => {
+					if (banner && !banner.hidden) showBanner(isOffline(navigator) ? 'offline' : showingCached ? 'back-online' : 'hidden');
 				});
 			});
+		}
+
+		void start();
 	</script>
 </Layout>

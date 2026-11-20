@@ -1,6 +1,7 @@
 ---
 import { Reflection } from '../lib/api'
 import favicon from '../assets/favicon.webp'
+import CalendarPanel from './CalendarPanel.astro'
 
 interface Props {
 	reflection: Reflection;
@@ -98,8 +99,27 @@ interface Props {
 				</div>
 			</section>
 
-			<!-- Image actions -->
+			<!-- Actions -->
 			<div class="mt-8 flex flex-wrap justify-center gap-3">
+				<button
+					id="tomorrow-reflection-button"
+					type="button"
+					class="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/60 px-4 py-2 font-serif text-sm tracking-wide text-stone-600 shadow-sm backdrop-blur transition-all duration-300 hover:border-emerald-200 hover:bg-white/80 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+					disabled
+					aria-busy="true"
+				>
+					<span>Mañana</span>
+				</button>
+				<button
+					id="calendar-reflection-button"
+					type="button"
+					aria-haspopup="dialog"
+					class="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/60 px-4 py-2 font-serif text-sm tracking-wide text-stone-600 shadow-sm backdrop-blur transition-all duration-300 hover:border-emerald-200 hover:bg-white/80 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+					disabled
+					aria-busy="true"
+				>
+					<span>Calendario</span>
+				</button>
 				<button
 					id="download-reflection-button"
 					type="button"
@@ -117,6 +137,15 @@ interface Props {
 					aria-busy="true"
 				>
 					<span>Copiar imagen</span>
+				</button>
+				<button
+					id="copy-text-reflection-button"
+					type="button"
+					class="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/60 px-4 py-2 font-serif text-sm tracking-wide text-stone-600 shadow-sm backdrop-blur transition-all duration-300 hover:border-emerald-200 hover:bg-white/80 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+					disabled
+					aria-busy="true"
+				>
+					<span>Copiar texto</span>
 				</button>
 			</div>
 
@@ -156,14 +185,21 @@ interface Props {
 	</main>
 </div>
 
+<CalendarPanel />
+
 <script>
-	import { getRandomReflection } from '../lib/api'
-	import { applyReflectionToDom } from '../lib/dom'
+	import { getAllReflections, getRandomReflection, getReflectionByMonthDay, ReflectionNotFoundError, type Reflection } from '../lib/api'
+	import { setupCalendar } from '../lib/calendar-panel';
+	import { isOffline } from '../lib/connectivity';
+	import { todayInMexicoCity, tomorrowInMexicoCity } from '../lib/date';
+	import { applyReflectionToDom, readDisplayedMonthDay, syncUrlWithReflection } from '../lib/dom'
 	import { notifications } from '../lib/notifications';
+	import { formatReflectionText } from '../lib/reflection-text';
 	import { canShareFiles, renderReflectionPng, slugify } from '../lib/share-image';
 
 	const downloadButton = document.getElementById('download-reflection-button');
 	const shareButton = document.getElementById('share-reflection-button');
+	const copyTextButton = document.getElementById('copy-text-reflection-button');
 
 	function readCurrentReflection() {
 		const title = document.getElementById('reflection-title')?.textContent?.trim() ?? '';
@@ -265,25 +301,119 @@ interface Props {
 		});
 	}
 
-	const boton = document.getElementById('random-reflection-button');
-	if (!(boton instanceof HTMLButtonElement)) {
-		// Shell not present
-	} else {
-		boton.addEventListener('click', async () => {
-			boton.disabled = true;
+	function copyTextFallback(text: string): boolean {
+		const textarea = document.createElement('textarea');
+		textarea.value = text;
+		textarea.setAttribute('readonly', '');
+		textarea.style.position = 'fixed';
+		textarea.style.opacity = '0';
+		document.body.appendChild(textarea);
+		textarea.select();
+		try {
+			return document.execCommand('copy');
+		} catch {
+			return false;
+		} finally {
+			textarea.remove();
+		}
+	}
+
+	async function copyText(text: string): Promise<boolean> {
+		if (navigator.clipboard?.writeText) {
 			try {
-				const reflection = await getRandomReflection();
-				applyReflectionToDom(reflection);
+				await navigator.clipboard.writeText(text);
+				return true;
 			} catch {
+				// Fall through to the legacy path.
+			}
+		}
+		return copyTextFallback(text);
+	}
+
+	if (copyTextButton instanceof HTMLButtonElement) {
+		copyTextButton.addEventListener('click', async () => {
+			copyTextButton.disabled = true;
+			try {
+				const ok = await copyText(formatReflectionText(readCurrentReflection()));
+				notifications.toast(
+					ok
+						? { title: 'Texto copiado', text: 'Pégalo donde quieras compartirlo.', icon: 'success', duration: 4000 }
+						: { title: 'No se pudo copiar', text: 'No pudimos copiar el texto. Intenta nuevamente.', icon: 'error', duration: 5000 },
+				);
+			} finally {
+				copyTextButton.disabled = false;
+			}
+		});
+	}
+
+	const randomButton = document.getElementById('random-reflection-button');
+	const tomorrowButton = document.getElementById('tomorrow-reflection-button');
+	const calendarButton = document.getElementById('calendar-reflection-button');
+
+	const navigationButtons = [randomButton, tomorrowButton, calendarButton].filter(
+		(button): button is HTMLButtonElement => button instanceof HTMLButtonElement,
+	);
+
+	async function loadReflection(fetchReflection: () => Promise<Reflection>, errorText: string) {
+		if (isOffline(navigator)) {
+			notifications.offline();
+			return;
+		}
+		for (const button of navigationButtons) button.disabled = true;
+		try {
+			const reflection = await fetchReflection();
+			applyReflectionToDom(reflection);
+			syncUrlWithReflection(reflection);
+		} catch (error) {
+			notifications.toast(
+				error instanceof ReflectionNotFoundError
+					? {
+							title: 'Sin reflexión',
+							text: 'No hay una reflexión disponible para esa fecha.',
+							icon: 'info',
+							duration: 5000,
+						}
+					: { title: 'No se pudo cargar', text: errorText, icon: 'error', duration: 5000 },
+			);
+		} finally {
+			for (const button of navigationButtons) button.disabled = false;
+		}
+	}
+
+	randomButton?.addEventListener('click', () =>
+		loadReflection(getRandomReflection, 'No pudimos obtener otra reflexión. Intenta nuevamente.'),
+	);
+
+	tomorrowButton?.addEventListener('click', () => {
+		const { month, day } = tomorrowInMexicoCity(new Date());
+		return loadReflection(
+			() => getReflectionByMonthDay(month, day),
+			'No pudimos obtener la reflexión de mañana. Intenta nuevamente.',
+		);
+	});
+
+	if (calendarButton instanceof HTMLButtonElement) {
+		setupCalendar(calendarButton, {
+			loadAvailable: () => (isOffline(navigator) ? Promise.reject(new Error('offline')) : getAllReflections()),
+			getDisplayed: readDisplayedMonthDay,
+			getToday: () => todayInMexicoCity(new Date()),
+			onSelect: ({ month, day }) =>
+				loadReflection(
+					() => getReflectionByMonthDay(month, day),
+					'No pudimos obtener la reflexión de ese día. Intenta nuevamente.',
+				),
+			onLoadError: () => {
+				if (isOffline(navigator)) {
+					notifications.offline();
+					return;
+				}
 				notifications.toast({
-					title: 'No se pudo cargar',
-					text: 'No pudimos obtener otra reflexión. Intenta nuevamente.',
+					title: 'No se pudo cargar el calendario',
+					text: 'No pudimos obtener las fechas disponibles. Intenta nuevamente.',
 					icon: 'error',
 					duration: 5000,
 				});
-			} finally {
-				boton.disabled = false;
-			}
+			},
 		});
 	}
 </script>
