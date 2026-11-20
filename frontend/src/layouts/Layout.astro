@@ -13,6 +13,8 @@ const pageDescription = 'Reflexiones diarias para acompañar cada día con una p
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/webp" href={favicon.src} />
+		<link rel="manifest" href="/manifest.webmanifest" />
+		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
 		<link rel="stylesheet" href="/crystal-alert.min.css" />
 		<script src="/crystal-alert.min.js" is:inline></script>
 		<meta name="generator" content={Astro.generator} />
@@ -38,6 +40,18 @@ const pageDescription = 'Reflexiones diarias para acompañar cada día con una p
 	</head>
 	<body>
 		<slot />
+		<script>
+			// Production only: a service worker in dev would serve stale modules.
+			if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+				window.addEventListener('load', () => {
+					try {
+						navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+					} catch {
+						// Offline support is an enhancement; never break the app over it.
+					}
+				});
+			}
+		</script>
 	</body>
 </html>
 
