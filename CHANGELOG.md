@@ -4,8 +4,13 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Bug Fixes
+
+- Add missing October 21 reflection ([b43973e](https://github.com/4DRIAN0RTIZ/ODAAT/commit/b43973eedf750da2eadc3176e9103973a2fb850c))
+
 ### Chore
 
+- Update CHANGELOG.md [skip ci] ([678967d](https://github.com/4DRIAN0RTIZ/ODAAT/commit/678967db02915d2ce8690e70fcd35cb5fda3a706))
 - Update CHANGELOG.md [skip ci] ([afaf63b](https://github.com/4DRIAN0RTIZ/ODAAT/commit/afaf63b28f54c705e9141bf2f3a14bf9a752be7b))
 - Update CHANGELOG.md [skip ci] ([5e8695c](https://github.com/4DRIAN0RTIZ/ODAAT/commit/5e8695c1f4613dbc152968ed07968464c6711cbd))
 
