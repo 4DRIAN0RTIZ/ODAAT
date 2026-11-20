@@ -4,8 +4,13 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Chore
+
+- Update CHANGELOG.md [skip ci] ([5e8695c](https://github.com/4DRIAN0RTIZ/ODAAT/commit/5e8695c1f4613dbc152968ed07968464c6711cbd))
+
 ### Features
 
+- Read tomorrow or a custom date reflection ([42b677f](https://github.com/4DRIAN0RTIZ/ODAAT/commit/42b677f9245ae86a8ae85bfd5d239b6bfab28393))
 - Copy reflection text to clipboard ([9cd42b8](https://github.com/4DRIAN0RTIZ/ODAAT/commit/9cd42b82c67a266f9e80c3ba3f9043b00da02891))
 
 ## [0.5.0] - 2026-11-09
