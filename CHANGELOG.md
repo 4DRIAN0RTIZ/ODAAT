@@ -6,10 +6,12 @@ All notable changes to this project are documented here.
 
 ### Chore
 
+- Update CHANGELOG.md [skip ci] ([afaf63b](https://github.com/4DRIAN0RTIZ/ODAAT/commit/afaf63b28f54c705e9141bf2f3a14bf9a752be7b))
 - Update CHANGELOG.md [skip ci] ([5e8695c](https://github.com/4DRIAN0RTIZ/ODAAT/commit/5e8695c1f4613dbc152968ed07968464c6711cbd))
 
 ### Features
 
+- Add reflection history calendar with shareable date links ([9ccc77e](https://github.com/4DRIAN0RTIZ/ODAAT/commit/9ccc77e1528339621d10e818a991a8fe8d9d6aa9))
 - Read tomorrow or a custom date reflection ([42b677f](https://github.com/4DRIAN0RTIZ/ODAAT/commit/42b677f9245ae86a8ae85bfd5d239b6bfab28393))
 - Copy reflection text to clipboard ([9cd42b8](https://github.com/4DRIAN0RTIZ/ODAAT/commit/9cd42b82c67a266f9e80c3ba3f9043b00da02891))
 
