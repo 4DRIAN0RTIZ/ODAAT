@@ -78,6 +78,8 @@ const placeholderReflection = {
 		const overlay = document.getElementById('connecting-overlay');
 		const reflectionRoot = document.getElementById('reflection-root');
 		const randomButton = document.getElementById('random-reflection-button');
+		const tomorrowButton = document.getElementById('tomorrow-reflection-button');
+		const customDateButton = document.getElementById('custom-date-reflection-button');
 		const downloadButton = document.getElementById('download-reflection-button');
 		const shareButton = document.getElementById('share-reflection-button');
 		const copyTextButton = document.getElementById('copy-text-reflection-button');
@@ -100,7 +102,7 @@ const placeholderReflection = {
 				reflectionRoot.hidden = false;
 				reflectionRoot.classList.remove('hidden');
 			}
-			for (const button of [randomButton, downloadButton, shareButton, copyTextButton]) {
+			for (const button of [randomButton, tomorrowButton, customDateButton, downloadButton, shareButton, copyTextButton]) {
 				if (button instanceof HTMLButtonElement) {
 					button.disabled = false;
 					button.removeAttribute('aria-busy');
