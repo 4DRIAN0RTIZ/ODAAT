@@ -190,6 +190,7 @@ interface Props {
 <script>
 	import { getAllReflections, getRandomReflection, getReflectionByMonthDay, ReflectionNotFoundError, type Reflection } from '../lib/api'
 	import { setupCalendar } from '../lib/calendar-panel';
+	import { isOffline } from '../lib/connectivity';
 	import { todayInMexicoCity, tomorrowInMexicoCity } from '../lib/date';
 	import { applyReflectionToDom, readDisplayedMonthDay, syncUrlWithReflection } from '../lib/dom'
 	import { notifications } from '../lib/notifications';
@@ -354,6 +355,10 @@ interface Props {
 	);
 
 	async function loadReflection(fetchReflection: () => Promise<Reflection>, errorText: string) {
+		if (isOffline(navigator)) {
+			notifications.offline();
+			return;
+		}
 		for (const button of navigationButtons) button.disabled = true;
 		try {
 			const reflection = await fetchReflection();
@@ -389,7 +394,7 @@ interface Props {
 
 	if (calendarButton instanceof HTMLButtonElement) {
 		setupCalendar(calendarButton, {
-			loadAvailable: getAllReflections,
+			loadAvailable: () => (isOffline(navigator) ? Promise.reject(new Error('offline')) : getAllReflections()),
 			getDisplayed: readDisplayedMonthDay,
 			getToday: () => todayInMexicoCity(new Date()),
 			onSelect: ({ month, day }) =>
@@ -397,13 +402,18 @@ interface Props {
 					() => getReflectionByMonthDay(month, day),
 					'No pudimos obtener la reflexión de ese día. Intenta nuevamente.',
 				),
-			onLoadError: () =>
+			onLoadError: () => {
+				if (isOffline(navigator)) {
+					notifications.offline();
+					return;
+				}
 				notifications.toast({
 					title: 'No se pudo cargar el calendario',
 					text: 'No pudimos obtener las fechas disponibles. Intenta nuevamente.',
 					icon: 'error',
 					duration: 5000,
-				}),
+				});
+			},
 		});
 	}
 </script>

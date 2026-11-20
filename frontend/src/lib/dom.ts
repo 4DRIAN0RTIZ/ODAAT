@@ -1,7 +1,9 @@
 import type { Reflection } from './api';
 import { buildShareUrl, fechaForUrl } from './calendar';
 import { todayInMexicoCity } from './date';
+import { saveLastReflection } from './last-reflection';
 
+/** Renders the reflection and remembers it as the last one shown (for offline use). */
 export function applyReflectionToDom(reflection: Reflection): void {
 	const reflectionTitle = document.getElementById('reflection-title');
 	const reflectionDate = document.getElementById('reflection-date');
@@ -21,6 +23,7 @@ export function applyReflectionToDom(reflection: Reflection): void {
 		p.textContent = paragraph;
 		reflectionParagraphs.appendChild(p);
 	}
+	saveLastReflection(reflection);
 }
 
 /** Month/day of the reflection currently displayed, or null before any was applied. */
