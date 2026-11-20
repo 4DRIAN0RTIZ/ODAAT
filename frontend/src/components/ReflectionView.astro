@@ -1,6 +1,7 @@
 ---
 import { Reflection } from '../lib/api'
 import favicon from '../assets/favicon.webp'
+import CalendarPanel from './CalendarPanel.astro'
 
 interface Props {
 	reflection: Reflection;
@@ -110,21 +111,15 @@ interface Props {
 					<span>Mañana</span>
 				</button>
 				<button
-					id="custom-date-reflection-button"
+					id="calendar-reflection-button"
 					type="button"
+					aria-haspopup="dialog"
 					class="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/60 px-4 py-2 font-serif text-sm tracking-wide text-stone-600 shadow-sm backdrop-blur transition-all duration-300 hover:border-emerald-200 hover:bg-white/80 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
 					disabled
 					aria-busy="true"
 				>
-					<span>Elegir fecha</span>
+					<span>Calendario</span>
 				</button>
-				<input
-					id="custom-date-reflection-input"
-					type="date"
-					aria-label="Elegir fecha de la reflexión"
-					class="sr-only"
-					tabindex="-1"
-				/>
 				<button
 					id="download-reflection-button"
 					type="button"
@@ -190,10 +185,13 @@ interface Props {
 	</main>
 </div>
 
+<CalendarPanel />
+
 <script>
-	import { getRandomReflection, getReflectionByMonthDay, ReflectionNotFoundError, type Reflection } from '../lib/api'
-	import { monthDayFromDateInput, tomorrowInMexicoCity } from '../lib/date';
-	import { applyReflectionToDom } from '../lib/dom'
+	import { getAllReflections, getRandomReflection, getReflectionByMonthDay, ReflectionNotFoundError, type Reflection } from '../lib/api'
+	import { setupCalendar } from '../lib/calendar-panel';
+	import { todayInMexicoCity, tomorrowInMexicoCity } from '../lib/date';
+	import { applyReflectionToDom, readDisplayedMonthDay, syncUrlWithReflection } from '../lib/dom'
 	import { notifications } from '../lib/notifications';
 	import { formatReflectionText } from '../lib/reflection-text';
 	import { canShareFiles, renderReflectionPng, slugify } from '../lib/share-image';
@@ -349,17 +347,18 @@ interface Props {
 
 	const randomButton = document.getElementById('random-reflection-button');
 	const tomorrowButton = document.getElementById('tomorrow-reflection-button');
-	const customDateButton = document.getElementById('custom-date-reflection-button');
-	const customDateInput = document.getElementById('custom-date-reflection-input');
+	const calendarButton = document.getElementById('calendar-reflection-button');
 
-	const navigationButtons = [randomButton, tomorrowButton, customDateButton].filter(
+	const navigationButtons = [randomButton, tomorrowButton, calendarButton].filter(
 		(button): button is HTMLButtonElement => button instanceof HTMLButtonElement,
 	);
 
 	async function loadReflection(fetchReflection: () => Promise<Reflection>, errorText: string) {
 		for (const button of navigationButtons) button.disabled = true;
 		try {
-			applyReflectionToDom(await fetchReflection());
+			const reflection = await fetchReflection();
+			applyReflectionToDom(reflection);
+			syncUrlWithReflection(reflection);
 		} catch (error) {
 			notifications.toast(
 				error instanceof ReflectionNotFoundError
@@ -388,26 +387,23 @@ interface Props {
 		);
 	});
 
-	if (customDateButton && customDateInput instanceof HTMLInputElement) {
-		const input = customDateInput;
-		customDateButton.addEventListener('click', () => {
-			try {
-				input.showPicker();
-			} catch {
-				// No showPicker support: show the native input so it can be used directly.
-				input.classList.remove('sr-only');
-				input.focus();
-			}
-		});
-		input.addEventListener('change', () => {
-			const monthDay = monthDayFromDateInput(input.value);
-			input.value = '';
-			if (!monthDay) return;
-			input.classList.add('sr-only');
-			return loadReflection(
-				() => getReflectionByMonthDay(monthDay.month, monthDay.day),
-				'No pudimos obtener la reflexión de esa fecha. Intenta nuevamente.',
-			);
+	if (calendarButton instanceof HTMLButtonElement) {
+		setupCalendar(calendarButton, {
+			loadAvailable: getAllReflections,
+			getDisplayed: readDisplayedMonthDay,
+			getToday: () => todayInMexicoCity(new Date()),
+			onSelect: ({ month, day }) =>
+				loadReflection(
+					() => getReflectionByMonthDay(month, day),
+					'No pudimos obtener la reflexión de ese día. Intenta nuevamente.',
+				),
+			onLoadError: () =>
+				notifications.toast({
+					title: 'No se pudo cargar el calendario',
+					text: 'No pudimos obtener las fechas disponibles. Intenta nuevamente.',
+					icon: 'error',
+					duration: 5000,
+				}),
 		});
 	}
 </script>

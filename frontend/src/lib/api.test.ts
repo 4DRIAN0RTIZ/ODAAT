@@ -1,6 +1,6 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { getReflectionByMonthDay, ReflectionNotFoundError } from './api.ts';
+import { getAllReflections, getReflectionByMonthDay, ReflectionNotFoundError } from './api.ts';
 
 const realFetch = globalThis.fetch;
 afterEach(() => {
@@ -42,4 +42,17 @@ test('throws a generic error on other failures', async () => {
 		assert.match(e.message, /Server Error/);
 		return true;
 	});
+});
+
+test('getAllReflections requests /reflections and returns the list', async () => {
+	const body = [{ month: 1, day: 1 }, { month: 2, day: 29 }];
+	const calls = mockFetch({ ok: true, json: async () => body });
+	const result = await getAllReflections();
+	assert.deepEqual(calls, ['https://odaat.onrender.com/reflections']);
+	assert.equal(result, body);
+});
+
+test('getAllReflections throws on failure', async () => {
+	mockFetch({ ok: false, status: 500, statusText: 'Server Error' });
+	await assert.rejects(getAllReflections(), /Server Error/);
 });
