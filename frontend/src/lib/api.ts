@@ -30,6 +30,28 @@ export async function getRandomReflection(): Promise<Reflection> {
 	return data;
 }
 
+export class ReflectionNotFoundError extends Error {
+	constructor(month: number, day: number) {
+		super(`No reflection for ${month}/${day}`);
+		this.name = 'ReflectionNotFoundError';
+	}
+}
+
+const pad2 = (value: number) => String(value).padStart(2, '0');
+
+export async function getReflectionByMonthDay(month: number, day: number): Promise<Reflection> {
+	const response = await fetch(`${API_BASE_URL}/reflections/${pad2(month)}-${pad2(day)}`);
+	if (response.status === 404) {
+		throw new ReflectionNotFoundError(month, day);
+	}
+	if (!response.ok) {
+		throw new Error(`Failed to fetch reflection for ${month}/${day}: ${response.statusText}`);
+	}
+
+	const data = await response.json();
+	return data;
+}
+
 export async function serverReady(onWaiting?: () => void): Promise<void> {
 	const deadline = Date.now() + 90000;
 	let notifiedWaiting = false;

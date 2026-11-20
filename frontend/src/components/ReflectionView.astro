@@ -98,8 +98,33 @@ interface Props {
 				</div>
 			</section>
 
-			<!-- Image actions -->
+			<!-- Actions -->
 			<div class="mt-8 flex flex-wrap justify-center gap-3">
+				<button
+					id="tomorrow-reflection-button"
+					type="button"
+					class="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/60 px-4 py-2 font-serif text-sm tracking-wide text-stone-600 shadow-sm backdrop-blur transition-all duration-300 hover:border-emerald-200 hover:bg-white/80 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+					disabled
+					aria-busy="true"
+				>
+					<span>Mañana</span>
+				</button>
+				<button
+					id="custom-date-reflection-button"
+					type="button"
+					class="inline-flex items-center gap-2 rounded-full border border-stone-200/80 bg-white/60 px-4 py-2 font-serif text-sm tracking-wide text-stone-600 shadow-sm backdrop-blur transition-all duration-300 hover:border-emerald-200 hover:bg-white/80 hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+					disabled
+					aria-busy="true"
+				>
+					<span>Elegir fecha</span>
+				</button>
+				<input
+					id="custom-date-reflection-input"
+					type="date"
+					aria-label="Elegir fecha de la reflexión"
+					class="sr-only"
+					tabindex="-1"
+				/>
 				<button
 					id="download-reflection-button"
 					type="button"
@@ -166,7 +191,8 @@ interface Props {
 </div>
 
 <script>
-	import { getRandomReflection } from '../lib/api'
+	import { getRandomReflection, getReflectionByMonthDay, ReflectionNotFoundError, type Reflection } from '../lib/api'
+	import { monthDayFromDateInput, tomorrowInMexicoCity } from '../lib/date';
 	import { applyReflectionToDom } from '../lib/dom'
 	import { notifications } from '../lib/notifications';
 	import { formatReflectionText } from '../lib/reflection-text';
@@ -321,25 +347,67 @@ interface Props {
 		});
 	}
 
-	const boton = document.getElementById('random-reflection-button');
-	if (!(boton instanceof HTMLButtonElement)) {
-		// Shell not present
-	} else {
-		boton.addEventListener('click', async () => {
-			boton.disabled = true;
+	const randomButton = document.getElementById('random-reflection-button');
+	const tomorrowButton = document.getElementById('tomorrow-reflection-button');
+	const customDateButton = document.getElementById('custom-date-reflection-button');
+	const customDateInput = document.getElementById('custom-date-reflection-input');
+
+	const navigationButtons = [randomButton, tomorrowButton, customDateButton].filter(
+		(button): button is HTMLButtonElement => button instanceof HTMLButtonElement,
+	);
+
+	async function loadReflection(fetchReflection: () => Promise<Reflection>, errorText: string) {
+		for (const button of navigationButtons) button.disabled = true;
+		try {
+			applyReflectionToDom(await fetchReflection());
+		} catch (error) {
+			notifications.toast(
+				error instanceof ReflectionNotFoundError
+					? {
+							title: 'Sin reflexión',
+							text: 'No hay una reflexión disponible para esa fecha.',
+							icon: 'info',
+							duration: 5000,
+						}
+					: { title: 'No se pudo cargar', text: errorText, icon: 'error', duration: 5000 },
+			);
+		} finally {
+			for (const button of navigationButtons) button.disabled = false;
+		}
+	}
+
+	randomButton?.addEventListener('click', () =>
+		loadReflection(getRandomReflection, 'No pudimos obtener otra reflexión. Intenta nuevamente.'),
+	);
+
+	tomorrowButton?.addEventListener('click', () => {
+		const { month, day } = tomorrowInMexicoCity(new Date());
+		return loadReflection(
+			() => getReflectionByMonthDay(month, day),
+			'No pudimos obtener la reflexión de mañana. Intenta nuevamente.',
+		);
+	});
+
+	if (customDateButton && customDateInput instanceof HTMLInputElement) {
+		const input = customDateInput;
+		customDateButton.addEventListener('click', () => {
 			try {
-				const reflection = await getRandomReflection();
-				applyReflectionToDom(reflection);
+				input.showPicker();
 			} catch {
-				notifications.toast({
-					title: 'No se pudo cargar',
-					text: 'No pudimos obtener otra reflexión. Intenta nuevamente.',
-					icon: 'error',
-					duration: 5000,
-				});
-			} finally {
-				boton.disabled = false;
+				// No showPicker support: show the native input so it can be used directly.
+				input.classList.remove('sr-only');
+				input.focus();
 			}
+		});
+		input.addEventListener('change', () => {
+			const monthDay = monthDayFromDateInput(input.value);
+			input.value = '';
+			if (!monthDay) return;
+			input.classList.add('sr-only');
+			return loadReflection(
+				() => getReflectionByMonthDay(monthDay.month, monthDay.day),
+				'No pudimos obtener la reflexión de esa fecha. Intenta nuevamente.',
+			);
 		});
 	}
 </script>
